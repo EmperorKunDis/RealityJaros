@@ -69,8 +69,12 @@ app.add_middleware(
     allowed_hosts=["localhost", "127.0.0.1", "*.example.com"]
 )
 
+# GDPR compliance middleware
+from src.middleware.gdpr_audit import GDPRComplianceMiddleware
+app.add_middleware(GDPRComplianceMiddleware)
+
 # Include API routers
-from src.api.routes import auth, emails, clients, responses, analysis, vectors, tasks, setup_wizard, monitoring, ultimate_prompts, auto_send
+from src.api.routes import auth, emails, clients, responses, analysis, vectors, tasks, setup_wizard, monitoring, ultimate_prompts, auto_send, gdpr_compliance, google_services
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 app.include_router(emails.router, prefix="/api/v1/emails", tags=["emails"])
@@ -83,6 +87,8 @@ app.include_router(setup_wizard.router, prefix="/api/v1/setup-wizard", tags=["se
 app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["monitoring"])
 app.include_router(ultimate_prompts.router, prefix="/api/v1/prompts", tags=["ultimate_prompts"])
 app.include_router(auto_send.router, prefix="/api/v1/auto-send", tags=["auto_send"])
+app.include_router(gdpr_compliance.router, prefix="/api/v1/gdpr", tags=["gdpr_compliance"])
+app.include_router(google_services.router, prefix="/api/v1/google", tags=["google_services"])
 
 @app.get("/")
 async def root():

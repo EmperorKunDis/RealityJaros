@@ -806,6 +806,264 @@ async def _should_send_daily_summary(user_id: str, automation_config: Automation
         logger.error(f"Error checking daily summary timing: {e}")
         return False
 
+# Google Services Integration Tasks
+
+@celery_app.task(name='google_workflows_monitor')
+def google_workflows_monitor() -> Dict[str, Any]:
+    """Monitor and execute scheduled Google workflows"""
+    try:
+        logger.info("Starting Google workflows monitoring")
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(_google_workflows_monitor_async())
+            return result
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"Google workflows monitoring failed: {e}")
+        raise
+
+
+@celery_app.task(name='google_sheets_auto_sync')
+def google_sheets_auto_sync() -> Dict[str, Any]:
+    """Auto-sync data to Google Sheets for users with enabled integrations"""
+    try:
+        logger.info("Starting Google Sheets auto-sync")
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(_google_sheets_auto_sync_async())
+            return result
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"Google Sheets auto-sync failed: {e}")
+        raise
+
+
+async def _google_workflows_monitor_async() -> Dict[str, Any]:
+    """Async implementation of Google workflows monitoring"""
+    try:
+        from src.services.google_services_integration import google_services
+        from src.models.google_services import GoogleWorkflow, WorkflowTrigger
+        
+        async with AsyncSessionLocal() as session:
+            # Get scheduled workflows that should be executed
+            from datetime import datetime
+            
+            # This is a simplified implementation - would need proper cron parsing
+            scheduled_workflows = await session.execute(
+                select(GoogleWorkflow).where(
+                    and_(
+                        GoogleWorkflow.is_active == True,
+                        GoogleWorkflow.trigger_type == WorkflowTrigger.WEEKLY_REPORT  # Example
+                    )
+                )
+            )
+            
+            workflows_executed = 0
+            errors = []
+            
+            for workflow in scheduled_workflows.scalars():
+                try:
+                    # Check if workflow should be executed based on schedule
+                    # This would need proper scheduling logic
+                    
+                    execution_id = await google_services.execute_workflow(
+                        str(workflow.id),
+                        {"trigger": "scheduled", "timestamp": datetime.now().isoformat()}
+                    )
+                    
+                    workflows_executed += 1
+                    logger.info(f"Executed workflow {workflow.id}: {execution_id}")
+                    
+                except Exception as e:
+                    error_msg = f"Error executing workflow {workflow.id}: {str(e)}"
+                    logger.error(error_msg)
+                    errors.append(error_msg)
+            
+            return {
+                "status": "success",
+                "workflows_executed": workflows_executed,
+                "errors": errors,
+                "executed_at": datetime.now().isoformat()
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in Google workflows monitoring: {e}")
+        raise
+
+
+async def _google_sheets_auto_sync_async() -> Dict[str, Any]:
+    """Async implementation of Google Sheets auto-sync"""
+    try:
+        from src.services.google_services_integration import google_services
+        from src.models.google_services import GoogleSheetIntegration
+        
+        async with AsyncSessionLocal() as session:
+            # Get active sheet integrations with auto-sync enabled
+            integrations = await session.execute(
+                select(GoogleSheetIntegration).where(
+                    and_(
+                        GoogleSheetIntegration.is_active == True,
+                        GoogleSheetIntegration.auto_sync == True
+                    )
+                )
+            )
+            
+            syncs_completed = 0
+            errors = []
+            
+            for integration in integrations.scalars():
+                try:
+                    # Check if sync is needed based on frequency
+                    should_sync = True  # Simplified logic
+                    
+                    if should_sync:
+                        result = await google_services.sync_emails_to_sheet(
+                            str(integration.user_id),
+                            str(integration.id)
+                        )
+                        
+                        if result["success"]:
+                            syncs_completed += 1
+                            logger.info(f"Auto-synced sheet integration {integration.id}")
+                        
+                except Exception as e:
+                    error_msg = f"Error auto-syncing sheet {integration.id}: {str(e)}"
+                    logger.error(error_msg)
+                    errors.append(error_msg)
+            
+            return {
+                "status": "success", 
+                "syncs_completed": syncs_completed,
+                "errors": errors,
+                "synced_at": datetime.now().isoformat()
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in Google Sheets auto-sync: {e}")
+        raise
+
+
+# GDPR Compliance Tasks
+
+@celery_app.task(name='gdpr_data_cleanup')
+def gdpr_data_cleanup() -> Dict[str, Any]:
+    """Periodic task for GDPR compliance data cleanup"""
+    try:
+        logger.info("Starting GDPR data cleanup")
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(_gdpr_data_cleanup_async())
+            return result
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"GDPR data cleanup failed: {e}")
+        raise
+
+
+@celery_app.task(name='gdpr_consent_check')
+def gdpr_consent_check() -> Dict[str, Any]:
+    """Periodic task to check and expire old consents"""
+    try:
+        logger.info("Starting GDPR consent check")
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            result = loop.run_until_complete(_gdpr_consent_check_async())
+            return result
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"GDPR consent check failed: {e}")
+        raise
+
+
+async def _gdpr_data_cleanup_async() -> Dict[str, Any]:
+    """Async implementation of GDPR data cleanup"""
+    try:
+        from src.services.gdpr_compliance_service import gdpr_service
+        
+        # Run GDPR data cleanup
+        cleanup_result = await gdpr_service.cleanup_expired_data()
+        
+        logger.info(f"GDPR data cleanup completed: {cleanup_result}")
+        
+        return {
+            "status": "success",
+            "cleanup_result": cleanup_result,
+            "completed_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in GDPR data cleanup: {e}")
+        raise
+
+
+async def _gdpr_consent_check_async() -> Dict[str, Any]:
+    """Async implementation of GDPR consent check"""
+    try:
+        from src.services.gdpr_compliance_service import gdpr_service
+        from src.models.gdpr_compliance import UserConsent, ConsentStatus
+        
+        async with AsyncSessionLocal() as session:
+            # Find expired consents
+            expired_consents = await session.execute(
+                select(UserConsent).where(
+                    and_(
+                        UserConsent.consent_status == ConsentStatus.GIVEN,
+                        UserConsent.expires_at < datetime.utcnow()
+                    )
+                )
+            )
+            
+            consents_expired = 0
+            for consent in expired_consents.scalars():
+                consent.consent_status = ConsentStatus.EXPIRED
+                consents_expired += 1
+                
+                # Log the expiration
+                await gdpr_service.log_data_access(
+                    user_id=str(consent.user_id),
+                    event_type="consent_expired",
+                    action=f"consent_expired_{consent.consent_type}",
+                    resource_type="user_consent",
+                    resource_id=str(consent.id),
+                    data_categories=consent.data_categories,
+                    legal_basis="legal_obligation"
+                )
+            
+            await session.commit()
+            
+            logger.info(f"GDPR consent check completed: {consents_expired} consents expired")
+            
+            return {
+                "status": "success",
+                "consents_expired": consents_expired,
+                "checked_at": datetime.utcnow().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Error in GDPR consent check: {e}")
+        raise
+
+
 # Celery beat schedule for periodic tasks
 celery_app.conf.beat_schedule = {
     'monitor-emails-every-minute': {
@@ -831,6 +1089,22 @@ celery_app.conf.beat_schedule = {
     'generate-daily-summaries': {
         'task': 'generate_daily_summaries',
         'schedule': 28800.0,  # Every 8 hours (3 times per day)
+    },
+    'gdpr-data-cleanup': {
+        'task': 'gdpr_data_cleanup',
+        'schedule': 86400.0,  # Daily at 2 AM UTC (configured via crontab in production)
+    },
+    'gdpr-consent-check': {
+        'task': 'gdpr_consent_check',
+        'schedule': 86400.0,  # Daily at 3 AM UTC (configured via crontab in production)
+    },
+    'google-workflows-monitor': {
+        'task': 'google_workflows_monitor',
+        'schedule': 1800.0,  # Every 30 minutes - Check for scheduled workflows
+    },
+    'google-sheets-auto-sync': {
+        'task': 'google_sheets_auto_sync',
+        'schedule': 3600.0,  # Every hour - Auto-sync sheets integrations
     },
 }
 

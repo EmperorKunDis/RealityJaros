@@ -50,5 +50,21 @@ class User(Base):
     notification_configuration = relationship("NotificationConfiguration", back_populates="user", uselist=False)
     integration_configuration = relationship("IntegrationConfiguration", back_populates="user", uselist=False)
     
+    # GDPR compliance relationships
+    consents = relationship("UserConsent", back_populates="user", cascade="all, delete-orphan")
+    processing_records = relationship("DataProcessingRecord", back_populates="user", cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    data_subject_requests = relationship("DataSubjectRequest", back_populates="user", cascade="all, delete-orphan")
+    privacy_settings = relationship("PrivacySettings", back_populates="user", uselist=False)
+    anonymization_logs = relationship("DataAnonymizationLog", back_populates="user", cascade="all, delete-orphan")
+    
+    # Google Services integration relationships
+    google_credentials = relationship("GoogleServiceCredentials", back_populates="user", cascade="all, delete-orphan")
+    google_sheet_integrations = relationship("GoogleSheetIntegration", cascade="all, delete-orphan")
+    google_docs_templates = relationship("GoogleDocsTemplate", cascade="all, delete-orphan")
+    google_workflows = relationship("GoogleWorkflow", cascade="all, delete-orphan")
+    google_generated_docs = relationship("GoogleGeneratedDoc", cascade="all, delete-orphan")
+    google_drive_mappings = relationship("GoogleDriveFileMapping", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User(email='{self.email}', is_active={self.is_active})>"
