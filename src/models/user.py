@@ -66,5 +66,11 @@ class User(Base):
     google_generated_docs = relationship("GoogleGeneratedDoc", cascade="all, delete-orphan")
     google_drive_mappings = relationship("GoogleDriveFileMapping", cascade="all, delete-orphan")
     
+    # Local LLM relationships
+    llm_preferences = relationship("UserLLMPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    llm_inference_logs = relationship("LLMInferenceLog", cascade="all, delete-orphan")
+    llm_switching_rules = relationship("ModelSwitchingRule", cascade="all, delete-orphan")
+    llm_download_jobs = relationship("ModelDownloadJob", cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User(email='{self.email}', is_active={self.is_active})>"

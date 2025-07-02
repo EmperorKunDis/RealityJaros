@@ -311,6 +311,58 @@ curl -X GET "http://localhost:8000/api/v1/google/workflows/templates"
 curl -X GET "http://localhost:8000/api/v1/google/health"
 ```
 
+### Local LLM integrace
+```bash
+# Registrace nového lokálního modelu
+curl -X POST "http://localhost:8000/api/v1/local-llm/models/register" \
+  -H "Content-Type: application/json" \
+  -d '{"model_name": "llama2_7b_chat", "display_name": "LLaMA 2 7B Chat", "model_id": "llama2:7b-chat", "provider": "ollama", "model_type": "chat", "model_size_gb": 3.8}'
+
+# Získání dostupných modelů
+curl -X GET "http://localhost:8000/api/v1/local-llm/models"
+curl -X GET "http://localhost:8000/api/v1/local-llm/models?model_type=chat&provider=ollama"
+
+# Načtení modelu do paměti
+curl -X POST "http://localhost:8000/api/v1/local-llm/models/model123/load"
+
+# Odpojení modelu z paměti
+curl -X POST "http://localhost:8000/api/v1/local-llm/models/model123/unload"
+
+# Chat s lokálním LLM
+curl -X POST "http://localhost:8000/api/v1/local-llm/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Ahoj, jak se máš?"}], "parameters": {"temperature": 0.7}}'
+
+# Generování textu
+curl -X POST "http://localhost:8000/api/v1/local-llm/completion" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Vysvětli kvantové počítání jednoduše:", "parameters": {"max_tokens": 200}}'
+
+# Generování embeddingů
+curl -X POST "http://localhost:8000/api/v1/local-llm/embeddings" \
+  -H "Content-Type: application/json" \
+  -d '{"texts": ["text 1", "text 2"]}'
+
+# Uživatelské preference
+curl -X GET "http://localhost:8000/api/v1/local-llm/preferences"
+curl -X PUT "http://localhost:8000/api/v1/local-llm/preferences" \
+  -H "Content-Type: application/json" \
+  -d '{"prefer_local_models": true, "enable_cloud_fallback": true, "preferred_response_time_ms": 3000}'
+
+# Analytika výkonu
+curl -X GET "http://localhost:8000/api/v1/local-llm/analytics/performance?days=7"
+
+# Kontrola zdraví systému
+curl -X GET "http://localhost:8000/api/v1/local-llm/system/health"
+
+# Ollama specifické operace
+curl -X GET "http://localhost:8000/api/v1/local-llm/providers/ollama/models"
+curl -X POST "http://localhost:8000/api/v1/local-llm/providers/ollama/pull?model_name=llama2:7b"
+
+# Rychlé nastavení
+curl -X POST "http://localhost:8000/api/v1/local-llm/setup/quick-start"
+```
+
 ### GDPR Compliance a ochrana dat
 ```bash
 # Záznam souhlasu uživatele
@@ -372,6 +424,7 @@ Tento systém nyní implementuje všechny funkce specifikované v designovém do
 4. **Automatické odesílání e-mailů** - Konfigurovatelná pravidla a denní přehledy
 5. **Compliance s EU GDPR** - Komplexní ochrana dat, správa souhlasů a práva subjektů údajů
 6. **Google Services integrace** - Automatizace s Google Sheets, Docs, Drive a workflow systém
+7. **Local LLM podpora** - Integrace Ollama, Hugging Face, LLaMA s přepínáním modelů a offline AI
 
 ### Google Workspace integrace funkce
 - **Google Sheets automatizace** - Automatická synchronizace e-mailových dat, klientských statistik a metrik odpovědí
@@ -379,6 +432,15 @@ Tento systém nyní implementuje všechny funkce specifikované v designovém do
 - **Google Drive správa** - Organizace souborů podle klientů a projektů s automatickým mapováním
 - **Workflow automatizace** - Spouštěče založené na událostech (nový e-mail, odpověď AI, denní přehled)
 - **Předpřipravené šablony** - Email-to-Sheets sync, týdenní reporty, sledování odpovědí klientům
+
+### Local LLM AI funkce
+- **Ollama integrace** - Automatická správa a spouštění lokálních modelů (LLaMA 2, Mistral, Code Llama)
+- **Hugging Face podpora** - Lokální inference s Transformers knihovnou
+- **Model switching** - Automatické přepínání mezi modely podle výkonu a kontextu
+- **Privacy-first AI** - Kompletně offline zpracování bez odeslání dat do cloudu
+- **Performance monitoring** - Sledování rychlosti, využití paměti a kvality odpovědí
+- **Fallback systém** - Automatické přepnutí na cloud API při selhání lokálních modelů
+- **Doporučené modely** - Předkonfigurované sady modelů pro různé use cases (obecné použití, vývoj, multijazyčnost)
 
 ### Architektonické vylepšení
 - **Middleware pro GDPR audit** - Automatické logování přístupu k datům
