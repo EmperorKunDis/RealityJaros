@@ -1,0 +1,88 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Futuristic Blue/Purple Email Automation Theme */
+
+@layer base {
+  :root {
+    --background: 220 25% 8%;
+    --foreground: 220 10% 95%;
+
+    --card: 220 20% 12%;
+    --card-foreground: 220 10% 95%;
+
+    --popover: 220 20% 12%;
+    --popover-foreground: 220 10% 95%;
+
+    --primary: 263 85% 65%;
+    --primary-foreground: 220 10% 95%;
+
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 220 10% 95%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 220 20% 20%;
+    --accent-foreground: 220 10% 95%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 263 85% 65%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 263 85% 65%;
+    --sidebar-primary-foreground: 220 10% 95%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 220 10% 95%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 263 85% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%), 
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%), 
+                radial-gradient(circle at 40% 40%, rgba(124, 93, 247, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, hsl(220, 25%, 8%) 0%, hsl(220, 20%, 6%) 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl;
+  }
+  
+  .neon-border {
+    @apply border border-transparent bg-gradient-to-r from-cyber-400 to-neon-500 bg-clip-border;
+  }
+  
+  .cyber-glow {
+    box-shadow: 0 0 20px rgba(124, 93, 247, 0.3), 
+                0 0 40px rgba(124, 93, 247, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyber-300 to-neon-400 bg-clip-text text-transparent;
+  }
+  
+  .floating-element {
+    @apply animate-float;
+  }
+}

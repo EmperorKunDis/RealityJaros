@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ai_user:ai_password@postgres:5432/ai_email_db
+      - REDIS_URL=redis://redis:6379
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+    depends_on:
+      - postgres
+      - redis
+      - chroma
+    volumes:
+      - ../logs:/app/logs
+    networks:
+      - ai_email_network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ai_email_db
+      POSTGRES_USER: ai_user
+      POSTGRES_PASSWORD: ai_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ai_email_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai_email_network
+
+  # ChromaDB Vector Database
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - ai_email_network
+
+  # Celery Worker (will be enabled later)
+  # celery-worker:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile.backend
+  #   command: celery -A src.celery_app worker --loglevel=info
+  #   environment:
+  #     - DATABASE_URL=postgresql+asyncpg://ai_user:ai_password@postgres:5432/ai_email_db
+  #     - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ../logs:/app/logs
+  #   networks:
+  #     - ai_email_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  chroma_data:
+
+networks:
+  ai_email_network:
+    driver: bridge

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(python -m pytest src/tests/ -v --tb=short)",
+      "Bash(pip install:*)",
+      "Bash(PYTHONPATH=/Users/martinsvanda/Prace/RealityJaros python -m pytest src/tests/test_main.py -v)",
+      "Bash(python:*)",
+      "Bash(chmod:*)",
+      "Bash(find:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)",
+      "Bash(uvicorn:*)",
+      "Bash(docker-compose:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)"
+    ],
+    "deny": []
+  }
+}
